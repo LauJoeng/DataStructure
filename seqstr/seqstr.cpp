@@ -92,9 +92,53 @@ int index(seqstring p,seqstring t)
 		return -1;
 }
 
+//kmp算法匹配方法下求next[]数组的方法
+//博客详解:http://wiki.jikexueyuan.com/project/kmp-algorithm/define.html
+void getNext(seqstring p,int next[])
+{
+	int k = -1,j = 0;
+	next[0] = -1;
+	while(j < p.length)
+	{
+		//p[k]表示前缀，p[j]表示前缀
+		if(k == -1 || p.str[k] == p.str[j])
+		{
+			k++;
+			j++;
+			next[j] = k;
+		}
+		else
+			k = next[k];
+	}
+}
+
+//kmp匹配子串，s为主串，p为模式串
+int kmpSearch(seqstring s,seqstring p,int next[])
+{
+	int i = 0;
+	int j = 0;
+	while(i < s.length && j < p.length)
+	{
+		if(j == -1 || s.str[i] == p.str[j])
+		{
+			i++;
+			j++;
+		}
+		else
+		{
+			j = next[j];
+		}
+	}
+	if(j == p.length)
+		return i - j;
+	else
+		return -1;
+}	
+
 void main()
 {
 	int i = 0;
+	int next[30];
 	char ch;
 	seqstring *s = (seqstring*)malloc(sizeof(seqstring)), *p= (seqstring*)malloc(sizeof(seqstring));
 	printf("请输入主串，以回车结束:\n");
@@ -114,6 +158,11 @@ void main()
 	}
 	p->str[++i] = '\0';
 	p->length = strlen(p->str) - 1;
+	getNext(*p,next);
+/*	for(i = 0; i < p->length ; i++)
+	{
+		printf("%d  ",next[i]);
+	}*/
 /*	printf("删除前str为:\n",s->str);
 	displaystring(s);
 	printf("\n");
@@ -121,8 +170,11 @@ void main()
 	printf("删除后:\n");
 	displaystring(s);
 	printf("\n");*/
+
 	printf("测试朴素模式匹配字符串:子串首次出现的位置是:\n");
 	printf("%d\n",index(*p,*s));
+	printf("\n测试kmp模式下匹配字符串：子串首次出现的位置是:\n");
+	printf("%d\n",kmpSearch(*s,*p,next));
 
 }
 

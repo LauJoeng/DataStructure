@@ -139,7 +139,27 @@ int BfsTraverse(LinkedGraph g)
 		}
 	}
 	return count;
+	
 }
+
+//求一个节点的度(无向图)
+int getPass (int nodeIndex,LinkedGraph g)
+{
+	EdgeNode *p;
+	int queue[M],front=0,rear=0,i=0,j;
+	int result=1;
+	p = g.adjList[nodeIndex].FirstEdge;
+	if(p == NULL)
+	{
+		return 0;
+	}
+	while(p)
+	{
+		result++;
+		p=p->next;
+	}
+	return result;
+} 
 
 int main()
 {
@@ -151,6 +171,8 @@ int main()
 	DfsTraverse(l);
 	printf("\nbfs遍历序列:\n");
 	BfsTraverse(l);
+	printf("\n邻接表中第2个节点的度:\n");
+	printf("%d",getPass(1,l));
 	return 0;
 }
 

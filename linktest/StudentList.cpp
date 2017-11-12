@@ -33,7 +33,7 @@ void menu()
 	printf("\n          4.根据学号查询.             \n");
 	printf("\n          5.输出链表数据             \n");
 	printf("\n          6.清空数据.             \n");
-	printf("\n=================");
+	printf("\n   =====================================");
 	printf("\n\n请选择:\n");
 }
 
@@ -58,15 +58,15 @@ int isNumExist(Lnode *head,char *num)
 void printList(Lnode *head)
 {
 	Lnode *p = head;
-	char *s = p->data.sex == 1 ? "女" : "男";
 	while(p->next != NULL)
 	{
+		
 		p = p->next;
 		printf("\n***************************\n");
 		printf("\n学号:%s\n",p->data.num);
 		printf("\n姓名:	%s\n",p->data.name);
 		printf("\n联系电话: %s\n",p->data.phoneNum);
-		printf("\n性别:%s\n\n\n",s);
+		printf("\n性别:%c\n\n\n",p->data.sex == 1?'女':'男');
 	}
 }
 
@@ -176,13 +176,12 @@ int getStuLocalByNum(Lnode *head,char *num)
 	int i = 0;
 	Lnode *p;
 	p = head;
-	printList(head);
+	
 	while(strcmp(num,p->data.num)!=0 && p != NULL)
 	{
 		p = p->next;
 		i++;
 	}
-	printf("\n查询到学生位置为：%d\n",i);
 	return i;
 }
 
@@ -240,7 +239,7 @@ void queryStuByNum(Lnode *head)
 	printf("\n性别: %d\n",stu->data.sex);
 }
 
-void main()
+int main()
 {
 	int menu_select,length = 0,flag = 0;
 	Lnode *head = NULL;
@@ -306,4 +305,5 @@ void main()
 		printf("\n");
 		menu();
 	}
+	return 0;
 }

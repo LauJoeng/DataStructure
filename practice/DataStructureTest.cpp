@@ -11,7 +11,7 @@
 #define BUFLEN 80
 #define HOMELEN 15
 #define SEXLEN 7
-#define BIRTHELEN 9
+#define BIRTHLEN 9
 #define PHONELEN 12
 
 char schoolworks[SWN][NAMELEN+1]={"DataStructure","Mathmatic","English"};
@@ -21,7 +21,7 @@ struct record
 	char name[NAMELEN+1];
 	char code[CODELEN+1];
 	char sex[SEXLEN+1];
-	char birth[BIRTHELEN+1];
+	char birth[BIRTHLEN+1];
 	char cellphone[PHONELEN+1];
 	char hometown[HOMELEN+1];
 	int marks[SWN];
@@ -45,7 +45,7 @@ void gotoxy(int x, int y) {
     SetConsoleCursorPosition(hOut, pos);//两个参数分别是指定哪个窗体，具体位置
 }
 
-void writeRecord(FILE *fp,struct record *rpt)
+void write_record(FILE *fp,struct record *rpt)
 {
 	int i;
 	fprintf(fp,"%s\n",rpt->name);
@@ -60,7 +60,55 @@ void writeRecord(FILE *fp,struct record *rpt)
 	}
 }
 
-void add_stu(struct record s)
+int read_record(FILE *fp,struct record *rc)
+{
+	char buf[BUFLEN];
+	int i;
+	if(fscanf(fp,"%s",buf)!=1)
+	{
+		return 0;
+	}
+	strncpy(rc->name,buf,NAMELEN);
+	fscanf(fp,"%s",buf);
+	strncpy(rc->code,buf,CODELEN);
+	fscanf(fp,"%s",buf);
+	strncpy(rc->sex,buf,SEXLEN);
+	fscanf(fp,"%s",buf);
+	strncpy(rc->birth,buf,BIRTHLEN);
+	fscanf(fp,"%s",buf);
+	strncpy(rc->hometown,buf,HOMELEN);
+	fscanf(fp,"%s",buf);
+	strncpy(rc->cellphone,buf,PHONELEN);
+	for(i = 0; i < SWN;i++)
+	{
+		fscanf(fp,"%d",&rc->marks[i]);
+	}
+	for(rc->total=0,i=0;i<SWN;i++)
+	{
+		rc->total+=rc->marks[i];
+	}
+	return 1;
+} 
+
+void displaystu(struct record stu)
+{
+	int i;
+	printf("***********************");
+	printf("\nName:%s\n",stu.name);
+	printf("Code:%s\n",stu.code);
+	printf("Sex:%s\n",stu.sex);
+	printf("Birth:%s\n",stu.birth);
+	printf("Cellphone:%s\n",stu.cellphone);
+	printf("Marks:\n");
+	for(i=0;i<SWN;i++)
+	{
+		printf("%-15s:%4d\n",schoolworks[i],stu.marks[i]);
+	}
+	printf("Total:%4d\n",stu.total);
+	printf("**********************\n");
+}
+
+int add_stu(struct record s)
 {
 	int j;
 	FILE *fp;
@@ -82,10 +130,140 @@ void add_stu(struct record s)
 		printf("\nInput the %s mark:",schoolworks[j]);
 		scanf("%d",&s.marks[j]);
 	}
-	writeRecord(fp,&s);
+	write_record(fp,&s);
 	fclose(fp);
+	return 1;
 }
 
+//按学号删除一个学生
+int deleteone(char *fname)
+{
+	char *key;
+	FILE *fp;
+	FILE *t;
+	char temp[FNAMELEN];//临时文件
+	struct record s;
+	if((fp=fopen(fname,"r"))==NULL)
+	{
+		printf("\n Can't open file %s\n",fname);
+		return 0; 	
+	}
+	printf("\nPlease input student's code you want to delete:");
+	scanf("%s",key);
+	t = fopen(temp,"w");
+	while(read_record(fp,&s)!=0)
+	{
+		if(strcmp(s.code,key)!=0)
+		{
+			write_record(t,&s);
+		}
+	}
+	fclose(fp);
+	fclose(t);
+	fp = fopen(fname,"w");
+	t = fopen(temp,"r");
+	while(read_record(t,&s)!=0)
+	{
+		write_record(fp,&s);
+	}
+	fclose(fp);
+	fclose(t);
+	return 1;
+}
+
+//按名字查找一个学生
+void search_by_name(char buf[BUFLEN])
+{
+	FILE *fp;
+	int c;
+	struct record rc;
+	printf("\nPlease input student's name you want to search:");
+	scanf("%s",buf);
+	if((fp=fopen(stuf,"r"))==NULL)
+	{
+		printf("\nPease creat file first!\n");
+		return;
+	}
+	c = 0;
+	while(read_record(fp,&rc)!=0)
+	{
+		if(strcmp(rc.name,buf)==0)
+		{
+			displaystu(rc);
+			c++;
+		}
+	}
+	fclose(fp);
+	if(c==0)
+	{
+		printf("\nThe student %s is not in the record!\n",buf);
+	}
+}
+
+void search_by_code(char buf[BUFLEN])
+{
+	struct record rc;
+	printf("\nPlease input student's code you want to search:");
+	scanf("%s",buf);
+	if((fp=fopen(stuf,"r"))==NULL)
+	{
+		printf("\nPease creat file first!\n");
+		return;
+	}
+	c = 0;
+	while(read_record(fp,&rc)!=0)
+	{
+		if(strcmp(rc.code,buf)==0)
+		{
+			displaystu(rc);
+			c++;
+		}
+	}
+	fclose(fp);
+	if(c==0)
+	{
+		printf("\nThe student whose code is %s not in the record!\n",buf);
+	}
+}
+
+//按总分排序,返回一个排好序的链表 
+struct record* sort_by_total_marks()
+{
+	FILE *fp;
+	struct record s;
+	struct record *p,*u,*v,*h;
+	int i;
+	if((fp=fopen(stuf,"r"))==NULL)
+	{
+		printf("\nCan't open file %s\n",stuf);
+		return;	
+	}
+	h = NULL;
+	p = (struct record*)malloc(sizeof(struct record));
+	while(read_record(fp,p)!=0)
+	{
+		v = h;
+		while(v&&p->total <= v->total)
+		{
+			u = v;
+			v = v->next;
+		}
+		if(v == h)
+		{
+			h = p;
+		}
+		else
+		{
+			u->next = p;	
+		}
+		p->next = v;
+		p = (struct record*)mallic(sizeof(struct record));
+	}
+	free(p);
+	fclose(fp);
+	return h;	
+}
+ 
 void list_stu(char *fname)
 {
 	FILE *fp;
@@ -97,11 +275,11 @@ void list_stu(char *fname)
 	}
 	while(read_record(fp,&s)!=0)
 	{
-		display(&s);
-		printf("\nPress ENTER to continue...\n");
-		while(getchar()!='\n');
+		printf("\n\n"); 
+		displaystu(s);
 	}
 	fclose(fp);
+	printf("\nPress ENTER to continue...\n");
 }
 
 void show_menu()
@@ -125,9 +303,10 @@ void show_menu()
 		  " 13. mean of marks",     
 		  " 14. Total marks",      
 		  " 15. number", 
-	      " 16. Quit" };
+	      " 16. Quit" ,
+		  "****************************"};
 	      int i = 0;
-	      for(i=0;i<17;i++)
+	      for(i=0;i<18;i++)
 	      {
 	      	printf("%s\n",f[i]);
 		  }
@@ -187,7 +366,7 @@ int main()
 					printf("\nInput the %s mark:",schoolworks[j]);
 					scanf("%d",&s.marks[j]);
 				}
-				writeRecord(fp,&s);
+				write_record(fp,&s);
 			}
 			fclose(fp);
 		}	
@@ -196,6 +375,7 @@ int main()
 	system("cls");
 	while(1)
 	{
+		system("cls");
 		show_menu();
 		getchar();
 		c=getchar();
@@ -204,24 +384,44 @@ int main()
 			case '0':
 				//增加学生 
 				system("cls");
-				add_stu(s);
+				if(add_stu(s))
+				{
+					printf("\n add success!\n");	
+				}
 				break;
 			case '1':
-				//删除学生 
+				//删除学生
+				system("cls");
+				if(deleteone(stuf))
+				{
+					printf("\n delete success!\n");	
+				} 
 				break;
 			case '2':
 				//列出全部记录 
+				system("cls");
+				list_stu(stuf);
 				break;
 			case '3':
-				//按姓名查找 
+				//按姓名查找
+				system("cls");
+				search_by_name(buf);
 				break;
 			case '4':
-				//按学号查找 
+				//按学号查找
+				system("cls");
+				search_by_code(buf);
 				break;
 			case '5':
-				//按生日查找 
-				break 
+				//按总分排序
+				system("cls");
+				sort_by_total_marks(); 
+				break;
+			default:
+				printf("\nPlease input a correct number\n");
+				break;
 		}
+		system("pause");
 	}
 	return 0;
 }

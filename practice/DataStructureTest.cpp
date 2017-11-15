@@ -200,8 +200,11 @@ void search_by_name(char buf[BUFLEN])
 	}
 }
 
+//按学号查找一个学生 
 void search_by_code(char buf[BUFLEN])
 {
+	FILE *fp;
+	int c;
 	struct record rc;
 	printf("\nPlease input student's code you want to search:");
 	scanf("%s",buf);
@@ -236,7 +239,7 @@ struct record* sort_by_total_marks()
 	if((fp=fopen(stuf,"r"))==NULL)
 	{
 		printf("\nCan't open file %s\n",stuf);
-		return;	
+		return NULL;	
 	}
 	h = NULL;
 	p = (struct record*)malloc(sizeof(struct record));
@@ -257,11 +260,61 @@ struct record* sort_by_total_marks()
 			u->next = p;	
 		}
 		p->next = v;
-		p = (struct record*)mallic(sizeof(struct record));
+		p = (struct record*)malloc(sizeof(struct record));
 	}
 	free(p);
 	fclose(fp);
 	return h;	
+}
+
+//获得平局分 
+float get_average_mark()
+{
+	FILE *fp;
+	int count=0,sum=0;
+	struct record *s;
+	if((fp = fopen(stuf,"r"))==NULL)
+	{
+		printf("\nCan't open file %s\n",stuf);
+		return -1;
+	}
+	s = (struct record*)malloc(sizeof(struct record));
+	while(read_record(fp,s)!=0)
+	{
+		count++;
+		sum+=s->total;
+	}
+	free(s);
+	return ((float)sum)/((float)count);
+}
+
+//输出每科的平均分 
+void get_savr_mark()
+{
+	float sums[SWN]= {0};
+	struct record *s;
+	int i = 0,count=0;
+	FILE *fp;
+	if((fp=fopen(stuf,"r"))==NULL)
+	{
+		printf("\nCan't open file %s\n",stuf);
+		return;
+	}
+	s = (struct record*)malloc(sizeof(struct record));
+	while(read_record(fp,s)!=0)
+	{
+		for(i=0;i<SWN;i++)
+		{
+			sums[i]+=s->marks[i];
+		}
+		count++;
+	}
+	free(s);
+	printf("\n************************\n");
+	printf("\nThe DataStructure's average mark is %6.2f\n",((float)sums[0])/((float)count));
+	printf("\nThe Mathmatics' average mark is %6.2f\n",((float)sums[1])/((float)count));
+	printf("\nThe English's average mark is %6.2f\n",((float)sums[0])/((float)count));
+	printf("************************\n");
 }
  
 void list_stu(char *fname)
@@ -282,31 +335,35 @@ void list_stu(char *fname)
 	printf("\nPress ENTER to continue...\n");
 }
 
+void display_link(struct record *s)
+{
+	struct record *p;
+	p = s;
+	while(p)
+	{
+		displaystu(*p);
+		printf("\n\n");
+		p = p->next; 
+	}
+}
+
 void show_menu()
 {
 	 char *f[]= {    
 	 /*定义菜单字符串数组*/    
-	 "**********Main*Menu***********",
+	 "//**********Main*Menu***********//\n",
 	      " 0. add a new student",
 	      " 1. delete a student",     
 		  " 2. List all",       
 		  " 3. search by name",     
 		  " 4. search by code",     
-		  " 5. search by birth",    
-		  " 6. search by phone",     
-		  " 7. sort by totalmark",     
-		  " 8. sort by structure",     
-		  " 9. sort by Mathmatic",      
-		  " 10. sort by English",    
-		  " 11. sort by age",     
-		  " 12. sort by code",     
-		  " 13. mean of marks",     
-		  " 14. Total marks",      
-		  " 15. number", 
-	      " 16. Quit" ,
-		  "****************************"};
+		  " 5. sort by total marks",    
+		  " 6. get average mark",
+		  " 7. get every subject average mark",
+		  " 8. exit\n",
+		  "//****************************//\n"};
 	      int i = 0;
-	      for(i=0;i<18;i++)
+	      for(i=0;i<11;i++)
 	      {
 	      	printf("%s\n",f[i]);
 		  }
@@ -321,8 +378,9 @@ int main()
 	char stuname[20][20];
 	int by,stunum=0;
 	char buf[BUFLEN];
+	float db;
 	FILE *fp;
-	struct record s;
+	struct record s,*h;
 	system("cls");
 	printf("Please input the students marks record file's name:\n");
 	scanf("%s",stuf);
@@ -415,8 +473,21 @@ int main()
 			case '5':
 				//按总分排序
 				system("cls");
-				sort_by_total_marks(); 
+				h = sort_by_total_marks();
+				display_link(h);
 				break;
+			case '6':
+				db = get_average_mark();
+				if(db!=-1)
+				{
+					printf("\nThe average marks is %6.2f\n\n\n",db);
+				}
+				break;
+			case '7':
+				get_savr_mark();
+				break;
+			case '8':
+				exit(0);
 			default:
 				printf("\nPlease input a correct number\n");
 				break;

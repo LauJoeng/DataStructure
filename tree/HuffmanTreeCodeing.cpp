@@ -17,7 +17,7 @@ typedef struct
 	HuffmanTree* HT;//Huffman树节点 
 	char *c;//待编码字符串 
 	int length;//字符个数 
-	HuffmanCode HC;//存储Huffman编码的数组； 
+	HuffmanCode HC;//存储Huffman编码的数组
 }Huffman;
 
 Huffman hfm;
@@ -55,7 +55,7 @@ void select(HuffmanTree* HT,int end,int *a,int *b)
 //构建Huffman树，并求Huffman编码 
 Huffman HuffmanCoding(Huffman hfm)
 {
-	int i,n,m,a,b,start;
+	int i,n,m,a,b,start,k;
 	int c,f;
 	char *cd;//求编码临时字符串 
 	n = hfm.length;//n为需要编码的字符个数 
@@ -64,7 +64,7 @@ Huffman HuffmanCoding(Huffman hfm)
 		return hfm;//若编码字符个数小于1则直接返回 
 	}
 	m=2*n-1;//若编码字符大于1，则生成的Huffman树总结点个数为2*n-1
-	for(i = n+1;i < m;i++)
+	for(i = n+1;i <= m;i++)
 	{
 		select(hfm.HT,i-1,&a,&b);
 		//修改父亲位置 
@@ -75,41 +75,56 @@ Huffman HuffmanCoding(Huffman hfm)
 		hfm.HT[i].rchild = b; 
 		
 		hfm.HT[i].weight = hfm.HT[a].weight + hfm.HT[b].weight;//将左右孩子节点权值之和赋给父亲
+	}
+	
+	for(i = 1;i <= m;i++)
+	{
+		printf("%d: lchild is :%d ,rchild is: %d\n",i,hfm.HT[i].lchild,hfm.HT[i].rchild);
+	}
 
-		hfm.HC = (HuffmanCode)malloc((n+1)*sizeof(char*)); //分配n个字符编码的头指针
-		cd = (char*)malloc(n*sizeof(char)); //分配求编码的空间
-		cd[n-1] = '\0';//编码最后一个字符为结束符
-		
-		for(i = 1;i <= n;i++)
+	hfm.HC = (HuffmanCode)malloc((n+1)*sizeof(char*)); //分配n个字符编码的头指针
+	cd = (char*)malloc(m*sizeof(char)); //分配求编码的空间
+	cd[m-1] = '\0';//编码最后一个字符为结束符
+	
+	for(i = 1;i <= n;i++)
+	{
+		start = m-1;//确定编码最后一个位置，后逐步向前移动 
+		for(c = i,f = hfm.HT[i].parent;f!=0;c = f,f = hfm.HT[f].parent)//从叶子结点逆向求编码 
 		{
-			start = n-1;//确定编码最后一个位置，后逐步向前移动 
-			for(c = i,f = hfm.HT[i].parent;f!=0;c = f,f = hfm.HT[f].parent)//从叶子结点逆向求编码 
-			{
-				if(c == hfm.HT[i].lchild)
-				{ 
-					cd[--start] = '0';//规定从上到下走向左孩子为0 
-				}
-				else
-				{
-					cd[--start] = '1';//右孩子为1 
-				}
+			if(c == hfm.HT[i].lchild)
+			{ 
+				cd[--start] = '0';//规定从上到下走向左孩子为0 
 			}
-			hfm.HC[i] = (char*)malloc((n-start)*sizeof(char));//该字符编码的长度 
-			strcpy(hfm.HC[i],&cd[start]);//从cd复制编码到hfm.HC 
+			else
+			{
+				cd[--start] = '1';//右孩子为1 
+			}
+			printf("liu: cd[%d]  %c\n",start,cd[start]);
 		}
+		hfm.HC[i] = (char*)malloc((m-start)*sizeof(char));//该字符编码的长度
+//		for(k = start;k < m-1;k++)
+//		{
+//			printf("%c\n",cd[k]);
+//		} 
+		printf("分配空间完成\n",&cd[start]);
+		strcpy(hfm.HC[i],&cd[start]);//从cd复制编码到hfm.HC 
 	}
 	free(cd);
+//	for(i = 1;i <= hfm.length;i++)
+//	{
+//		printf("%c : %s {%d} \n",hfm.c[i],hfm.HC[i],i);
+//	}
 	return hfm; 
 }
 
 //从文件读取Huffman结构体文件 
-Huffman readHfmObject(char *fname)
-{
+ void readHfmObject(Huffman hfm)
+{ 
 	FILE *fp;
-	if((fp = fopen(*fname)) == NULL)
+	if((fp = fopen(FILENAME,"r")) == NULL)
 	{
 		printf("\n读取文件失败!\n");
-		return NULL;
+		return;
 	}
 	else
 	{
@@ -161,20 +176,20 @@ Huffman inputHuffman(Huffman hfm)
 		hfm.HT[i].weight = 0;	
 	} 
 	hfm.length = n;//将长度值赋给Huffman树结构体
-	if((fp = fopen(FILENAME,"w+")) == NULL)
-	{
-		printf("\n打开文件失败!\n");
-		return hfm; 
-	}
-	if((fwrite(&hfm,sizeof(HuffmanTree),1,fp)) == 1)
-	{
-		printf("\n数据以保存!\n");
-		rewind(fp);
-	}
-	else
-	{
-		printf("\n数据保存失败!\n");
-	}
+//	if((fp = fopen(FILENAME,"w+")) == NULL)
+//	{
+//		printf("\n打开文件失败!\n");
+//		return hfm; 
+//	}
+//	if((fwrite(&hfm,sizeof(HuffmanTree),1,fp)) == 1)
+//	{
+//		printf("\n数据已保存!\n");
+//		rewind(fp);
+//	}
+//	else
+//	{
+//		printf("\n数据保存失败!\n");
+//	}
 	return hfm;
 }
 
@@ -205,7 +220,7 @@ Huffman initHuffman(Huffman hfm)
 		}
 		else
 		{
-			hfm = readHfmObject(FILENAME);
+//			hfm = readHfmObject(FILENAME);
 		}
 	}
 }
@@ -214,6 +229,13 @@ Huffman initHuffman(Huffman hfm)
 
 int main()
 {
+	int i =0;
+	hfm = inputHuffman(hfm);
+	hfm = HuffmanCoding(hfm); 
+//	for(i = 0 ; i < hfm.length;i++)
+//	{
+//		printf("%s\n",hfm.HC[i]);
+//	}
 	return 0;
 }	
 

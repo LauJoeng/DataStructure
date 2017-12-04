@@ -1,0 +1,2 @@
+14	1	E:\code\dataStructure\tree\2.cpp	[Error] expected class-name before '{' token
+29	25	E:\code\dataStructure\tree\2.cpp	[Error] expected unqualified-id before 'public'

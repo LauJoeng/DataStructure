@@ -164,11 +164,57 @@ void kruskal(Mgraph g)
 		printf("%c---%c%6d (%d ---> %d )\n",g.vex[tree[j].beg],g.vex[tree[j].en],tree[j].length,tree[j].beg,tree[j].en);
 	}
 } 
+
+//prim算法求最小生成树 
+void prim(Mgraph g,edge tree[M-1])
+{
+	edge x;
+	int d,min,j,k,s,v;
+	for(v = 1;v < g.n-1;v++)
+	{
+		tree[v-1].beg=0;
+		tree[v-1].en = 0;
+		tree[v-1].length = g.edges[0][v]; 
+	}
+	for(k = 0;k < g.n-3;k++)
+	{
+		min=tree[k].length;
+		s = k;
+		for(j=k+1;j < g.n-2;j++)
+		{
+			if(tree[j].length < min)
+			{
+				min = tree[j].length;
+				s = j;
+			}
+		}
+		v = tree[s].en;//入选顶点为v
+		
+		x = tree[s];
+		tree[s] = tree[k];//通过交换，将当前最小边加入TREE中
+		for(j = k+1;j <=g.n-2;j++)
+		{
+			d = g.edges[v][tree[j].en];
+			if(d < tree[j].length)
+			{
+				tree[j].length = d;
+				tree[j].beg = v;	
+			}	
+		} 
+	 } 
+	 printf("\n最小生成树：\n");
+	 for(j = 0;j <= g.n-2;j++)
+	 {
+	 	printf("\n%c---%c  %d\n",g.vex[tree[j].beg],g.vex[tree[j].en],tree[j].length);
+	 }
+	 printf("\n\nthe root of it is %c\n",g.vex[0]);
+}
  
 
 int main()
 {
 	Mgraph *g = (Mgraph*)malloc(sizeof(Mgraph));
+	edge tree[M-1];
 	int i,j;
 	char *s = "E://graphinformation.txt";
 	create(g,s,0);
@@ -189,5 +235,6 @@ int main()
 	}
 	printf("***********************************************************\n\n\n");
 	kruskal(*g);
+	prim(*g,tree);
 	return 0;	
 } 

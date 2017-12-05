@@ -144,7 +144,7 @@ void postorder(bintree t)
 
 int main()
 {
-	bintree t = createbintreer();
+	bintree t = createbintree();
 	printf("\n二叉树创建完毕，开始遍历!\n\n");
 	printf("\n\n前序遍历结果:\n");
 	preorder(t);

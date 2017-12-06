@@ -235,6 +235,6 @@ int main()
 	}
 	printf("***********************************************************\n\n\n");
 	kruskal(*g);
-	prim(*g,tree);
+//	prim(*g,tree);
 	return 0;	
 } 

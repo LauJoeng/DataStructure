@@ -77,65 +77,76 @@ Huffman HuffmanCoding(Huffman hfm)
 		hfm.HT[i].weight = hfm.HT[a].weight + hfm.HT[b].weight;//将左右孩子节点权值之和赋给父亲
 	}
 	
-	for(i = 1;i <= m;i++)
-	{
-		printf("%d: lchild is :%d ,rchild is: %d\n",i,hfm.HT[i].lchild,hfm.HT[i].rchild);
-	}
+//	for(i = 1;i <= m;i++)
+//	{
+//		printf("%d: lchild is :%d ,rchild is: %d,weight is %d\n",i,hfm.HT[i].lchild,hfm.HT[i].rchild,hfm.HT[i].weight);
+//	}
 
 	hfm.HC = (HuffmanCode)malloc((n+1)*sizeof(char*)); //分配n个字符编码的头指针
-	cd = (char*)malloc(m*sizeof(char)); //分配求编码的空间
-	cd[m-1] = '\0';//编码最后一个字符为结束符
+	cd = (char*)malloc((m+1)*sizeof(char)); //分配求编码的空间
+	cd[m] = '\0';//编码最后一个字符为结束符
 	
 	for(i = 1;i <= n;i++)
 	{
-		start = m-1;//确定编码最后一个位置，后逐步向前移动 
+		start = m;//确定编码最后一个位置，后逐步向前移动 
 		for(c = i,f = hfm.HT[i].parent;f!=0;c = f,f = hfm.HT[f].parent)//从叶子结点逆向求编码 
 		{
-			if(c == hfm.HT[i].lchild)
+//			printf("\nhfm.HT[%d].parent = %d,hfm.HT[%d].lchild = %d\n",c,hfm.HT[c].parent,f,hfm.HT[f].lchild);
+//			printf("c = %d,f = %d\n",c,f);
+			if(c == hfm.HT[f].lchild)
 			{ 
 				cd[--start] = '0';//规定从上到下走向左孩子为0 
 			}
-			else
+			else if(c == hfm.HT[f].rchild) 
 			{
 				cd[--start] = '1';//右孩子为1 
 			}
-			printf("liu: cd[%d]  %c\n",start,cd[start]);
+//			printf("c = %d,f = %d   cd[%d] = %c \n",c,f,start,cd[start]);
 		}
-		hfm.HC[i] = (char*)malloc((m-start)*sizeof(char));//该字符编码的长度
-//		for(k = start;k < m-1;k++)
-//		{
-//			printf("%c\n",cd[k]);
-//		} 
-		printf("分配空间完成\n",&cd[start]);
+		hfm.HC[i] = (char*)malloc((m+1-start)*sizeof(char));//该字符编码的长度
 		strcpy(hfm.HC[i],&cd[start]);//从cd复制编码到hfm.HC 
 	}
 	free(cd);
 //	for(i = 1;i <= hfm.length;i++)
 //	{
-//		printf("%c : %s {%d} \n",hfm.c[i],hfm.HC[i],i);
+//		printf("%c : %s \n",hfm.c[i],hfm.HC[i]);
 //	}
 	return hfm; 
 }
 
 //从文件读取Huffman结构体文件 
- void readHfmObject(Huffman hfm)
+ void readHfmObject(Huffman &hfm,char *fname)
 { 
+	int i;
 	FILE *fp;
-	if((fp = fopen(FILENAME,"r")) == NULL)
+	if((fp = fopen(fname,"r")) == NULL)
 	{
 		printf("\n读取文件失败!\n");
 		return;
 	}
 	else
 	{
-		
+		fscanf(fp,"%d",&hfm.length);
+		for(i = 1; i <= hfm.length;i++)
+		{
+			fscanf(fp," %c %d ",&hfm.c[i],&hfm.HT[i].weight);
+		}
 	}
+	rewind(fp);
 }
 
 //将Huffman结构体写入文件 
-void writeHuffmanObject(Huffman hfm)
+void writeHuffmanObject(Huffman hfm,char *fname)
 {
-	
+	int i;
+	FILE *fp;
+	fp = fopen(fname,"w+");
+	fprintf(fp,"%d\n",hfm.length);
+	for(i = 1;i <= hfm.length;i++)
+	{
+		fprintf(fp,"%c %d ",hfm.c[i],hfm.HT[i].weight);
+	}
+	rewind(fp);
 }
 
 //保存用户将要编码的字符和权值到文件 
@@ -160,7 +171,8 @@ Huffman inputHuffman(Huffman hfm)
 	for(i = 1;i <=n;i++)
 	{
 		printf("\n请输入第%d个字符:",i);
-		scanf("%s",&hfm.c[i]);
+		getchar();
+		scanf("%c",&hfm.c[i]);
 		printf("\n请输入第%d个字符的权值:",i);
 		scanf("%d",&hfm.HT[i].weight);
 		hfm.HT[i].lchild = 0;
@@ -168,7 +180,7 @@ Huffman inputHuffman(Huffman hfm)
 		hfm.HT[i].parent = 0;
 	}
 	//初始化原始字符节点以外的空间
-	for(;i < 2*n-1;i++)
+	for(;i <= 2*n-1;i++)
 	{
 		hfm.HT[i].lchild = 0;
 		hfm.HT[i].rchild = 0;
@@ -176,35 +188,30 @@ Huffman inputHuffman(Huffman hfm)
 		hfm.HT[i].weight = 0;	
 	} 
 	hfm.length = n;//将长度值赋给Huffman树结构体
-//	if((fp = fopen(FILENAME,"w+")) == NULL)
-//	{
-//		printf("\n打开文件失败!\n");
-//		return hfm; 
-//	}
-//	if((fwrite(&hfm,sizeof(HuffmanTree),1,fp)) == 1)
-//	{
-//		printf("\n数据已保存!\n");
-//		rewind(fp);
-//	}
-//	else
-//	{
-//		printf("\n数据保存失败!\n");
-//	}
 	return hfm;
 }
 
 
 Huffman initHuffman(Huffman hfm)
 {
-	int n,i,x = -1;
+	int n,i,x ;
 	FILE *fp;
-	if((fp = fopen(FILENAME,"rt")) == NULL)//对文件一读文本的形式打开
+	fp = fopen(FILENAME,"rt");
+	if(fp == NULL)//对文件一读文本的形式打开
 	{
 		hfm = inputHuffman(hfm);
+//		fp = fopen(FILENAME,"wt");
+//		fprintf(fp,"%d\n",hfm.length);
+//		for(i = 1;i <= hfm.length;i++)
+//		{
+//			fprintf(fp,"%c %d ",hfm.c[i],hfm.HT[i].weight);
+//		}
+//		rewind(fp);
+		writeHuffmanObject(hfm,FILENAME);
 	}
 	else
 	{
-		printf("\nHuffman树已经初始化过，是否重新初始化(是:1   否:0)?  ");
+		printf("\nHuffman树已经初始化过，是否重新初始化?(是:1   否:0)  ");
 		while(1)
 		{
 			printf("请正确选择:\n");
@@ -216,26 +223,61 @@ Huffman initHuffman(Huffman hfm)
 		}
 		if(x == 1)
 		{
-			hfm = inputHuffman(hfm);	
+			hfm = inputHuffman(hfm);
+//			fp = fopen(FILENAME,"w+");
+//			fprintf(fp,"%d\n",hfm.length);
+//			for(i = 1;i <= hfm.length;i++)
+//			{
+//				fprintf(fp,"%c %d ",hfm.c[i],hfm.HT[i].weight);	
+//			}
+//			rewind(fp);
+			writeHuffmanObject(hfm,FILENAME);
 		}
 		else
 		{
-//			hfm = readHfmObject(FILENAME);
+			fscanf(fp,"%d",&n);
+			hfm.c = (char*)malloc((n+1)*sizeof(char));
+			hfm.HT = (HuffmanTree*)malloc((2*n)*sizeof(HuffmanTree));
+			for(i = 1;i <= n;i++)
+			{
+				fscanf(fp," %c %d ",&hfm.c[i],&hfm.HT[i].weight);//将已经在文件中的字符和其对应的权重输入到hfm.c[i]和hfm.HT[i].weight
+			}
+			for(i = 1;i <= n;i++)
+			{
+				hfm.HT[i].parent = 0;
+				hfm.HT[i].lchild = 0;
+				hfm.HT[i].rchild = 0;
+			}
+			for(;i <= 2*n-1;i++)
+			{
+				hfm.HT[i].parent = 0;
+				hfm.HT[i].lchild = 0;
+				hfm.HT[i].rchild = 0;
+				hfm.HT[i].weight = 0;
+			}
+			hfm.length = n;
 		}
 	}
+	fclose(fp);
+	hfm = HuffmanCoding(hfm);
+	return hfm;
 }
-
-
 
 int main()
 {
 	int i =0;
-	hfm = inputHuffman(hfm);
-	hfm = HuffmanCoding(hfm); 
-//	for(i = 0 ; i < hfm.length;i++)
+	
+	hfm = initHuffman(hfm);
+//	for(i = 1;i <= 2*hfm.length-1;i++)
 //	{
-//		printf("%s\n",hfm.HC[i]);
+//		printf("%d: parent is %d,lchild is :%d ,rchild is: %d,weight is %d\n",i,hfm.HT[i].lchild,hfm.HT[i].rchild,hfm.HT[i].weight);
 //	}
+	printf("\n编码结果如下:\n");
+	for(i = 1;i <= hfm.length;i++)
+	{
+		printf("%c: %s\n",hfm.c[i],hfm.HC[i]);
+	}
+	 
 	return 0;
 }	
 

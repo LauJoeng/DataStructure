@@ -1,3 +1,6 @@
+
+//°¡¹şËã·¨Êé:pokerÅÆÓÎÏ·
+
 #include<stdio.h>
 #include<string.h>
 

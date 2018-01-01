@@ -428,7 +428,6 @@ void encode_file()
 	count *count_head = Init();
 	linkhuf huf_head = Creat_Head() ,p;
 	char fname[200];
-	
 	printf("\n请输入文件路径:");
 	scanf("%s",fname);
 	Statistics_Frequency(count_head,fname);//统计字符频率 
@@ -465,7 +464,7 @@ void decode_file(code find[],int j)
 		for(i=1;i<=j;i++)
 		{
 			if(strcmp(s,find[i].c)==0)
-			{
+			{ 
 				flag=1;
 				if(strcmp(find[i].c,"32")==0)
 				{
@@ -489,7 +488,6 @@ void decode_file(code find[],int j)
 	strcat(text,"\0");
 	printf("\n解码后内容为:\n");
 	printf("%s\n",text);
-	
 } 
 
 //拷贝文件 
@@ -557,7 +555,7 @@ void menu()
 
 int main()
 {  
-	int j,i,k,m,menu_select;
+	int j=0,i,k,m,menu_select;
 	code find[MAXSIZE];
 	count *count_head = Init();
 	linkhuf huf_head = Creat_Head() ,p;
@@ -565,32 +563,16 @@ int main()
 	FILE *fp ;
 	if((fp = fopen(FREQUENCY_FNAME,"r")) == NULL)
 	{
-		printf("\n初始化Huffman树,请选择初始化方式(1:通过编码文件初始化 2:通过现有文件初始化):");
-		scanf("%d",&k);
-		if(k == 1)
-		{
-			printf("\n请输入文件路径:");
-			scanf("%s",fname);
-			Statistics_Frequency(count_head,fname);//统计字符频率 
-			Write_Frequency(count_head);//存储字符频率 
-			Read_Weight_Value(count_head,find,&j);//把字符频率存入find数组 
-			Assingment(huf_head,find,j);//初始化链表 
-			Shelt_Sort(huf_head);//按权值排序 
-			huf_head->next = Creat_Huffman(huf_head->next);//构造Huffman树 
-			Find_Code(huf_head->next,find,j);//编码 
-		} 
-		else if(k == 2)
-		{
-			printf("\n请输入字符频率文件路径:");
-			scanf("%s",fname);
-			copy_file(fname,FREQUENCY_FNAME);
-			initCount(FREQUENCY_FNAME,count_head);
-			Read_Weight_Value(count_head,find,&j);
-			Assingment(huf_head,find,j);//初始化链表 
-			Shelt_Sort(huf_head);//按权值排序 
-			huf_head->next = Creat_Huffman(huf_head->next);//构造Huffman树 
-			Find_Code(huf_head->next,find,j);//编码
-		} 
+		printf("\n初始化Huffman树(通过编码文件初始化):");
+		printf("\n请输入文件路径:");
+		scanf("%s",fname);
+		Statistics_Frequency(count_head,fname);//统计字符频率 
+		Write_Frequency(count_head);//存储字符频率  
+		Read_Weight_Value(count_head,find,&j);//把字符频率存入find数组 
+		Assingment(huf_head,find,j);//初始化链表 
+		Shelt_Sort(huf_head);//按权值排序
+		huf_head->next = Creat_Huffman(huf_head->next);//构造Huffman树 
+		Find_Code(huf_head->next,find,j);//编码  
 	}
 	else
 	{
@@ -600,10 +582,8 @@ int main()
 		Shelt_Sort(huf_head);//按权值排序 
 		huf_head->next = Creat_Huffman(huf_head->next);//构造Huffman树 
 		Find_Code(huf_head->next,find,j);//编码	
-		for(k=1;k<=j;k++)
-		{
-			printf("\n%s  --   %s\n",find[k].ch,find[k].c);
-		}
+		printf("\nHuffman树初始化如下:\n\n"); 
+		Show_Code(find,j);
 	}
 	system("pause");
 	system("cls");
